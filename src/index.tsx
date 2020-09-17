@@ -21,19 +21,19 @@ const Square = (props: SquareProps):JSX.Element => {
 
 
 class Board extends React.Component {
-  state: { squares: any[]}
+  state: { squares: any[], xIsNext: boolean }
   constructor(props: Object) {
     super({})
     this.state = {
-      squares: Array(9).fill(null)
+      squares: Array(9).fill(null),
+      xIsNext: true,
     };
   }
 
   handleClick(i: number): void {
     const squares = this.state.squares.slice();
-    squares[i] = 'X';
-    this.setState({ squares })
-
+    squares[i] = this.state.xIsNext ? 'X' : 'O';
+    this.setState({ squares, xIsNext: !this.state.xIsNext })
   }
 
   renderSquare(i: number): JSX.Element {
@@ -46,7 +46,8 @@ class Board extends React.Component {
   }
 
   render(): JSX.Element {
-    const status = 'Next player: X';
+    const turn = this.state.xIsNext ? 'X' : 'O';
+    const status = `Next player: ${turn}`;
 
     return (
       <div>
