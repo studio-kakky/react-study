@@ -2,22 +2,28 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Square extends React.Component {
-  render() {
+type SquareProps = {
+  value: number
+}
+
+class Square extends React.Component<SquareProps, {}> {
+  render():JSX.Element {
     return (
       <button className="square">
-        {/* TODO */}
+        {this.props.value}
       </button>
     );
   }
 }
 
+
+
 class Board extends React.Component {
-  renderSquare(i) {
-    return <Square />;
+  renderSquare(i: number): JSX.Element {
+    return <Square value={i} />;
   }
 
-  render() {
+  render(): JSX.Element {
     const status = 'Next player: X';
 
     return (
@@ -44,7 +50,7 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
-  render() {
+  render(): JSX.Element {
     return (
       <div className="game">
         <div className="game-board">
