@@ -20,6 +20,6 @@
     "jsx": "react"
   },
   "include": [
-    "src"
+    "_legacy_src"
   ]
 }
