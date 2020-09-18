@@ -24,7 +24,7 @@ const calculateWinner = (squares: SquareValue[]): SquareValue => {
   return null;
 }
 
-type SquareProps = {
+interface SquareProps {
   value: 'X' | 'O' | null
   onClick: () => void
 }
@@ -40,39 +40,25 @@ const Square = (props: SquareProps):JSX.Element => {
   );
 }
 
-class Board extends React.Component {
-  state: { squares: any[], xIsNext: boolean }
-  constructor(props: Object) {
-    super({})
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
-  }
+interface BoardProps {
+  squares: SquareValue[],
+  onClick: (i: number) => void
+}
 
-  handleClick(i: number): void {
-    const squares = this.state.squares.slice();
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({ squares, xIsNext: !this.state.xIsNext })
-  }
+class Board extends React.Component<BoardProps> {
 
   renderSquare(i: number): JSX.Element {
     return (
       <Square
-        value={this.state.squares[i]}
-        onClick={() => this.handleClick(i)}
+        value={this.props.squares[i]}
+        onClick={() => this.props.onClick(i)}
       />
     );
   }
 
   render(): JSX.Element {
-    const winner = calculateWinner(this.state.squares)
-    const turn = this.state.xIsNext ? 'X' : 'O'
-    const status = !!winner ?  `Winner: ${winner}` : `Next player: ${turn}`;
-
     return (
       <div>
-        <div className="status">{status}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -94,15 +80,75 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+  state: { history: {squares: SquareValue[]}[], xIsNext: boolean, stepNumber: number };
+  constructor(props: Object) {
+    super(props);
+    this.state = {
+      history: [{
+        squares: Array(9).fill(null),
+      }],
+      xIsNext: true,
+      stepNumber: 0
+    }
+  }
+
+  handleClick(i: number) {
+    const history = this.state.history.slice(0, this.state.stepNumber + 1) // Alias
+    const current = history.slice(-1)[0];
+    const squares = current.squares.slice();
+
+    if (calculateWinner(squares) || squares[i]) {
+      return;
+    }
+
+    squares[i] = this.state.xIsNext ? 'X' : 'O'
+    this.setState({
+      history: history.concat([{
+        squares
+      }]),
+      stepNumber: history.length,
+      xIsNext: !this.state.xIsNext
+    })
+
+  }
+
+  jumpTo(step: number) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: step % 2 === 0
+    })
+  }
+
   render(): JSX.Element {
+    const history = this.state.history;
+    const current = history[this.state.stepNumber];
+    const winner = calculateWinner(current.squares);
+
+    const moves = history.map((step, move) => {
+      const desc = move !== 0
+        ? `Go to move #${move}`
+        : `Go to game start`
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        </li>
+      )
+    })
+
+    const turn = this.state.xIsNext ? 'X' : 'O'
+    const status = !!winner ?  `Winner: ${winner}` : `Next player: ${turn}`;
+
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+          <Board
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)}
+          />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
+          <div>{status}</div>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
